@@ -8,6 +8,9 @@ import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import Alunos from "./pages/Alunos";
+import Treinos from "./pages/Treinos";
+import Progresso from "./pages/Progresso";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,6 +32,9 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/alunos" element={<Alunos />} />
+              <Route path="/treinos" element={<Treinos />} />
+              <Route path="/progresso" element={<Progresso />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </TooltipProvider>

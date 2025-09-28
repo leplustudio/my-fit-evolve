@@ -69,9 +69,11 @@ const Index = () => {
               <p className="text-muted-foreground mb-4">
                 Cadastre e acompanhe todos os seus alunos em um só lugar
               </p>
-              <Button className="w-full">
-                Ver Alunos
-              </Button>
+              <Link to="/alunos">
+                <Button className="w-full">
+                  Ver Alunos
+                </Button>
+              </Link>
             </div>
 
             {/* Card Treinos */}
@@ -81,9 +83,11 @@ const Index = () => {
               <p className="text-muted-foreground mb-4">
                 Gere treinos personalizados com IA para cada aluno
               </p>
-              <Button className="w-full">
-                Criar Treino
-              </Button>
+              <Link to="/treinos">
+                <Button className="w-full">
+                  Criar Treino
+                </Button>
+              </Link>
             </div>
 
             {/* Card Progresso */}
@@ -93,9 +97,11 @@ const Index = () => {
               <p className="text-muted-foreground mb-4">
                 Visualize a evolução dos seus alunos com gráficos
               </p>
-              <Button className="w-full">
-                Ver Progresso
-              </Button>
+              <Link to="/progresso">
+                <Button className="w-full">
+                  Ver Progresso
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
