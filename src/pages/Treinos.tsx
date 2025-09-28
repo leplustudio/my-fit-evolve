@@ -11,7 +11,9 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { ArrowLeft, Plus, Edit, Trash2, Dumbbell, Calendar, Users } from 'lucide-react';
+import { ArrowLeft, Plus, Edit, Trash2, Dumbbell, Calendar, Users, Sparkles } from 'lucide-react';
+import AIAssistant from '@/components/AIAssistant';
+import AIWorkoutGenerator from '@/components/AIWorkoutGenerator';
 
 interface Aluno {
   id: string;
@@ -37,6 +39,8 @@ const Treinos = () => {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingPlano, setEditingPlano] = useState<PlanoTreino | null>(null);
+  const [aiGeneratorOpen, setAiGeneratorOpen] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<Aluno | null>(null);
   const [formData, setFormData] = useState({
     nome: '',
     descricao: '',
@@ -183,6 +187,23 @@ const Treinos = () => {
     }
   };
 
+  const handleAIGeneration = (student: Aluno) => {
+    setSelectedStudent(student);
+    setAiGeneratorOpen(true);
+  };
+
+  const handleWorkoutGenerated = (workoutData: any) => {
+    setFormData({
+      nome: workoutData.nome,
+      descricao: workoutData.descricao,
+      aluno_id: workoutData.aluno_id,
+      duracao_semanas: workoutData.duracao_semanas.toString(),
+      dias_semana: workoutData.dias_semana.toString(),
+      nivel: workoutData.nivel
+    });
+    setModalOpen(true);
+  };
+
   const getNivelColor = (nivel: string) => {
     switch (nivel) {
       case 'iniciante': return 'bg-green-100 text-green-800';
@@ -214,13 +235,14 @@ const Treinos = () => {
             </Link>
             <h1 className="text-2xl font-bold text-foreground">Planos de Treino</h1>
           </div>
-          <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-            <DialogTrigger asChild>
-              <Button disabled={alunos.length === 0}>
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Plano
-              </Button>
-            </DialogTrigger>
+          <div className="flex space-x-2">
+            <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+              <DialogTrigger asChild>
+                <Button disabled={alunos.length === 0}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Novo Plano
+                </Button>
+              </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>
@@ -320,6 +342,13 @@ const Treinos = () => {
               </form>
             </DialogContent>
           </Dialog>
+          
+          <AIAssistant 
+            context="workout_planning" 
+            triggerText="Consultar IA" 
+            variant="outline"
+          />
+        </div>
         </div>
       </header>
 
@@ -338,6 +367,30 @@ const Treinos = () => {
                 Cadastrar Alunos
               </Button>
             </Link>
+            
+            {/* Seção de Geração com IA */}
+            <div className="mt-6 p-6 bg-card border border-border rounded-lg">
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <Sparkles className="h-5 w-5 mr-2 text-primary" />
+                Criar Treino com Inteligência Artificial
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                Selecione um aluno para gerar um plano de treino personalizado usando IA
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {alunos.map((aluno) => (
+                  <Button
+                    key={aluno.id}
+                    variant="outline"
+                    onClick={() => handleAIGeneration(aluno)}
+                    className="justify-start"
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Gerar para {aluno.nome}
+                  </Button>
+                ))}
+              </div>
+            </div>
           </div>
         ) : planos.length === 0 ? (
           <div className="text-center py-12">
@@ -399,6 +452,16 @@ const Treinos = () => {
           </div>
         )}
       </main>
+      
+      {/* AI Workout Generator */}
+      {selectedStudent && (
+        <AIWorkoutGenerator
+          student={selectedStudent}
+          onWorkoutGenerated={handleWorkoutGenerated}
+          open={aiGeneratorOpen}
+          onOpenChange={setAiGeneratorOpen}
+        />
+      )}
     </div>
   );
 };

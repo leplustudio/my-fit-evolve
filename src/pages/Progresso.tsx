@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { ArrowLeft, Plus, TrendingUp, Users, Calendar } from 'lucide-react';
+import AIAssistant from '@/components/AIAssistant';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 interface Aluno {
@@ -195,7 +196,14 @@ const Progresso = () => {
             </Link>
             <h1 className="text-2xl font-bold text-foreground">Acompanhar Progresso</h1>
           </div>
-          <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+          <div className="flex space-x-2">
+            <AIAssistant 
+              context="progress_analysis" 
+              studentData={progressos} 
+              triggerText="Analisar com IA" 
+              variant="outline"
+            />
+            <Dialog open={modalOpen} onOpenChange={setModalOpen}>
             <DialogTrigger asChild>
               <Button disabled={alunos.length === 0}>
                 <Plus className="h-4 w-4 mr-2" />
@@ -327,6 +335,7 @@ const Progresso = () => {
               </form>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
       </header>
 

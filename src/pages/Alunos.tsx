@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { ArrowLeft, Plus, Edit, Trash2, User } from 'lucide-react';
+import AIAssistant from '@/components/AIAssistant';
 
 interface Aluno {
   id: string;
@@ -184,7 +185,13 @@ const Alunos = () => {
             </Link>
             <h1 className="text-2xl font-bold text-foreground">Gerenciar Alunos</h1>
           </div>
-          <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+          <div className="flex space-x-2">
+            <AIAssistant 
+              context="student_management" 
+              triggerText="Consultar IA" 
+              variant="outline"
+            />
+            <Dialog open={modalOpen} onOpenChange={setModalOpen}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
@@ -287,6 +294,7 @@ const Alunos = () => {
               </form>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
       </header>
 
