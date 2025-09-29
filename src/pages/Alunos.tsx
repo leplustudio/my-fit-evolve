@@ -10,8 +10,10 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { ArrowLeft, Plus, Edit, Trash2, User } from 'lucide-react';
+import { ArrowLeft, Plus, Edit, Trash2, User, Sparkles, Dumbbell } from 'lucide-react';
 import AIAssistant from '@/components/AIAssistant';
+import AIWorkoutGenerator from '@/components/AIWorkoutGenerator';
+import StudentWorkouts from '@/components/StudentWorkouts';
 
 interface Aluno {
   id: string;
@@ -32,6 +34,8 @@ const Alunos = () => {
   const [alunos, setAlunos] = useState<Aluno[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+  const [aiGeneratorOpen, setAiGeneratorOpen] = useState(false);
+  const [selectedAluno, setSelectedAluno] = useState<Aluno | null>(null);
   const [editingAluno, setEditingAluno] = useState<Aluno | null>(null);
   const [formData, setFormData] = useState({
     nome: '',
@@ -161,6 +165,11 @@ const Alunos = () => {
         variant: "destructive"
       });
     }
+  };
+
+  const handleGenerateWorkout = (aluno: Aluno) => {
+    setSelectedAluno(aluno);
+    setAiGeneratorOpen(true);
   };
 
   if (loading) {
@@ -316,6 +325,14 @@ const Alunos = () => {
                   <CardTitle className="text-lg">{aluno.nome}</CardTitle>
                   <div className="flex space-x-2">
                     <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleGenerateWorkout(aluno)}
+                      title="Gerar treino com IA"
+                    >
+                      <Sparkles className="h-4 w-4" />
+                    </Button>
+                    <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => handleEdit(aluno)}
@@ -349,12 +366,27 @@ const Alunos = () => {
                       </p>
                     )}
                   </div>
+                  
+                  {/* Lista de treinos do aluno */}
+                  <div className="mt-4 pt-4 border-t border-border">
+                    <StudentWorkouts alunoId={aluno.id} alunoNome={aluno.nome} />
+                  </div>
                 </CardContent>
               </Card>
             ))}
           </div>
         )}
       </main>
+
+      {/* AI Workout Generator */}
+      {selectedAluno && (
+        <AIWorkoutGenerator
+          student={selectedAluno}
+          onWorkoutGenerated={fetchAlunos}
+          open={aiGeneratorOpen}
+          onOpenChange={setAiGeneratorOpen}
+        />
+      )}
     </div>
   );
 };

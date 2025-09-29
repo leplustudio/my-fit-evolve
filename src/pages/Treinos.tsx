@@ -194,18 +194,6 @@ const Treinos = () => {
     setAiGeneratorOpen(true);
   };
 
-  const handleWorkoutGenerated = (workoutData: any) => {
-    setFormData({
-      nome: workoutData.nome,
-      descricao: workoutData.descricao,
-      aluno_id: workoutData.aluno_id,
-      duracao_semanas: workoutData.duracao_semanas.toString(),
-      dias_semana: workoutData.dias_semana.toString(),
-      nivel: workoutData.nivel
-    });
-    setModalOpen(true);
-  };
-
   const handleViewExercises = (plano: PlanoTreino) => {
     setViewingPlano(plano);
   };
@@ -490,7 +478,7 @@ const Treinos = () => {
       {selectedStudent && (
         <AIWorkoutGenerator
           student={selectedStudent}
-          onWorkoutGenerated={handleWorkoutGenerated}
+          onWorkoutGenerated={fetchPlanos}
           open={aiGeneratorOpen}
           onOpenChange={setAiGeneratorOpen}
         />

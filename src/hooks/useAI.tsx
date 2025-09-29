@@ -10,6 +10,22 @@ interface AIRequest {
 interface AIResponse {
   response: string;
   suggestions?: string[];
+  exercises?: Array<{
+    name: string;
+    muscle_group?: string;
+    equipment?: string;
+    sets?: number;
+    reps?: string;
+    rest?: number;
+    instructions?: string;
+    day?: number;
+    order?: number;
+  }>;
+  metrics?: {
+    trend: string;
+    score: number;
+    next_goals: string[];
+  };
 }
 
 export const useAI = () => {

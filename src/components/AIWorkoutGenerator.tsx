@@ -5,11 +5,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAI } from '@/hooks/useAI';
-import { Sparkles, Target, Calendar, TrendingUp } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
+import { Sparkles, Target, Calendar, TrendingUp, Loader2 } from 'lucide-react';
 
 interface AIWorkoutGeneratorProps {
   student: any;
-  onWorkoutGenerated: (workout: any) => void;
+  onWorkoutGenerated?: () => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -27,6 +29,7 @@ const AIWorkoutGenerator: React.FC<AIWorkoutGeneratorProps> = ({
     level: 'iniciante'
   });
   const [generatedPlan, setGeneratedPlan] = useState<any>(null);
+  const [saving, setSaving] = useState(false);
   const { loading, generateWorkoutPlan } = useAI();
 
   const handleGenerate = async () => {
@@ -35,12 +38,13 @@ const AIWorkoutGenerator: React.FC<AIWorkoutGeneratorProps> = ({
     if (result) {
       // Parse da resposta da IA para extrair dados estruturados
       const workout = {
-        nome: `Treino IA - ${student.nome}`,
+        nome: `Treino ${preferences.goal} - ${student.nome}`,
         descricao: result.response,
         duracao_semanas: parseInt(preferences.duration),
         dias_semana: parseInt(preferences.frequency),
         nivel: preferences.level,
-        aluno_id: student.id
+        aluno_id: student.id,
+        exercises: result.exercises || []
       };
       
       setGeneratedPlan({
@@ -50,11 +54,104 @@ const AIWorkoutGenerator: React.FC<AIWorkoutGeneratorProps> = ({
     }
   };
 
-  const handleUse = () => {
-    if (generatedPlan) {
-      onWorkoutGenerated(generatedPlan);
+  const handleSave = async () => {
+    if (!generatedPlan) return;
+    
+    setSaving(true);
+    try {
+      // 1. Criar o plano de treino
+      const { data: planoData, error: planoError } = await supabase
+        .from('planos_treino')
+        .insert([{
+          nome: generatedPlan.nome,
+          descricao: generatedPlan.descricao,
+          duracao_semanas: generatedPlan.duracao_semanas,
+          dias_semana: generatedPlan.dias_semana,
+          nivel: generatedPlan.nivel,
+          aluno_id: generatedPlan.aluno_id
+        }])
+        .select()
+        .single();
+
+      if (planoError) throw planoError;
+
+      // 2. Adicionar exercícios se houver
+      if (generatedPlan.exercises && generatedPlan.exercises.length > 0) {
+        // Primeiro, buscar ou criar exercícios na tabela de exercícios
+        for (const exercise of generatedPlan.exercises) {
+          // Verificar se o exercício já existe
+          const { data: existingExercise } = await supabase
+            .from('exercicios')
+            .select('id')
+            .eq('nome', exercise.name)
+            .maybeSingle();
+
+          let exerciseId = existingExercise?.id;
+
+          // Se não existe, criar
+          if (!exerciseId) {
+            const { data: newExercise, error: exerciseError } = await supabase
+              .from('exercicios')
+              .insert([{
+                nome: exercise.name,
+                grupo_muscular: exercise.muscle_group || 'Geral',
+                equipamento: exercise.equipment,
+                instrucoes: exercise.instructions
+              }])
+              .select()
+              .single();
+
+            if (exerciseError) {
+              console.error('Erro ao criar exercício:', exerciseError);
+              continue;
+            }
+            exerciseId = newExercise.id;
+          }
+
+          // Adicionar exercício ao plano
+          await supabase
+            .from('treino_exercicios')
+            .insert([{
+              plano_treino_id: planoData.id,
+              exercicio_id: exerciseId,
+              dia_treino: exercise.day || 1,
+              ordem: exercise.order || 1,
+              series: exercise.sets || 3,
+              repeticoes: exercise.reps || '10',
+              descanso_segundos: exercise.rest || 60,
+              observacoes: exercise.instructions
+            }]);
+        }
+      }
+
+      toast({
+        title: "Sucesso!",
+        description: "Treino criado com sucesso pela IA"
+      });
+
+      // Fechar modal e resetar
       onOpenChange(false);
       setGeneratedPlan(null);
+      setPreferences({
+        goal: '',
+        duration: '4',
+        frequency: '3',
+        level: 'iniciante'
+      });
+      
+      // Callback para atualizar lista
+      if (onWorkoutGenerated) {
+        onWorkoutGenerated();
+      }
+    } catch (error) {
+      console.error('Erro ao salvar treino:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível salvar o treino",
+        variant: "destructive"
+      });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -168,10 +265,17 @@ const AIWorkoutGenerator: React.FC<AIWorkoutGeneratorProps> = ({
           {/* Botão Gerar */}
           <Button 
             onClick={handleGenerate} 
-            disabled={loading || !preferences.goal}
+            disabled={loading || !preferences.goal || saving}
             className="w-full"
           >
-            {loading ? 'Gerando treino...' : 'Gerar Treino com IA'}
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Gerando treino...
+              </>
+            ) : (
+              'Gerar Treino com IA'
+            )}
           </Button>
 
           {/* Resultado */}
@@ -210,10 +314,26 @@ const AIWorkoutGenerator: React.FC<AIWorkoutGeneratorProps> = ({
                   )}
 
                   <div className="flex space-x-2 pt-2">
-                    <Button onClick={handleUse} size="sm">
-                      Usar este Plano
+                    <Button 
+                      onClick={handleSave} 
+                      disabled={saving}
+                      size="sm"
+                    >
+                      {saving ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Salvando...
+                        </>
+                      ) : (
+                        'Salvar Treino'
+                      )}
                     </Button>
-                    <Button onClick={() => setGeneratedPlan(null)} variant="outline" size="sm">
+                    <Button 
+                      onClick={() => setGeneratedPlan(null)} 
+                      variant="outline" 
+                      size="sm"
+                      disabled={saving}
+                    >
                       Gerar Novo
                     </Button>
                   </div>
