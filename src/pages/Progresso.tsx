@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { ArrowLeft, Plus, TrendingUp, Users, Calendar } from 'lucide-react';
+import { ArrowLeft, Plus, TrendingUp, Users, Calendar, Edit, Trash2 } from 'lucide-react';
 import AIAssistant from '@/components/AIAssistant';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
@@ -38,6 +38,7 @@ const Progresso = () => {
   const [selectedAluno, setSelectedAluno] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+  const [editingProgresso, setEditingProgresso] = useState<ProgressoData | null>(null);
   const [formData, setFormData] = useState({
     aluno_id: '',
     data_registro: new Date().toISOString().split('T')[0],
@@ -128,14 +129,25 @@ const Progresso = () => {
         observacoes: formData.observacoes || null
       };
 
-      const { error } = await supabase
-        .from('progresso')
-        .insert([data]);
+      if (editingProgresso) {
+        const { error } = await supabase
+          .from('progresso')
+          .update(data)
+          .eq('id', editingProgresso.id);
 
-      if (error) throw error;
+        if (error) throw error;
+        toast({ title: "Sucesso", description: "Progresso atualizado com sucesso!" });
+      } else {
+        const { error } = await supabase
+          .from('progresso')
+          .insert([data]);
 
-      toast({ title: "Sucesso", description: "Progresso registrado com sucesso!" });
+        if (error) throw error;
+        toast({ title: "Sucesso", description: "Progresso registrado com sucesso!" });
+      }
+
       setModalOpen(false);
+      setEditingProgresso(null);
       setFormData({
         aluno_id: '',
         data_registro: new Date().toISOString().split('T')[0],
@@ -153,6 +165,44 @@ const Progresso = () => {
       toast({
         title: "Erro",
         description: "Não foi possível salvar o progresso",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleEdit = (progresso: ProgressoData) => {
+    setEditingProgresso(progresso);
+    setFormData({
+      aluno_id: progresso.aluno_id,
+      data_registro: progresso.data_registro,
+      peso: progresso.peso?.toString() || '',
+      percentual_gordura: progresso.percentual_gordura?.toString() || '',
+      massa_muscular: progresso.massa_muscular?.toString() || '',
+      bicep: progresso.medidas?.bicep?.toString() || '',
+      cintura: progresso.medidas?.cintura?.toString() || '',
+      coxa: progresso.medidas?.coxa?.toString() || '',
+      observacoes: progresso.observacoes || ''
+    });
+    setModalOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir este registro?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('progresso')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      toast({ title: "Sucesso", description: "Registro removido com sucesso!" });
+      fetchProgressos(selectedAluno);
+    } catch (error) {
+      console.error('Erro ao excluir progresso:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir o registro",
         variant: "destructive"
       });
     }
@@ -212,7 +262,9 @@ const Progresso = () => {
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle>Registrar Progresso</DialogTitle>
+                <DialogTitle>
+                  {editingProgresso ? 'Editar Progresso' : 'Registrar Progresso'}
+                </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -330,7 +382,9 @@ const Progresso = () => {
                   <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
                     Cancelar
                   </Button>
-                  <Button type="submit">Registrar</Button>
+                  <Button type="submit">
+                    {editingProgresso ? 'Atualizar' : 'Registrar'}
+                  </Button>
                 </div>
               </form>
             </DialogContent>
@@ -462,6 +516,22 @@ const Progresso = () => {
                             <h4 className="font-semibold">
                               {new Date(progresso.data_registro).toLocaleDateString('pt-BR')}
                             </h4>
+                            <div className="flex space-x-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEdit(progresso)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDelete(progresso.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                             {progresso.peso && (

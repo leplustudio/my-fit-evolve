@@ -11,9 +11,10 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { ArrowLeft, Plus, Edit, Trash2, Dumbbell, Calendar, Users, Sparkles } from 'lucide-react';
+import { ArrowLeft, Plus, Edit, Trash2, Dumbbell, Calendar, Users, Sparkles, Eye } from 'lucide-react';
 import AIAssistant from '@/components/AIAssistant';
 import AIWorkoutGenerator from '@/components/AIWorkoutGenerator';
+import WorkoutExercises from '@/components/WorkoutExercises';
 
 interface Aluno {
   id: string;
@@ -41,6 +42,7 @@ const Treinos = () => {
   const [editingPlano, setEditingPlano] = useState<PlanoTreino | null>(null);
   const [aiGeneratorOpen, setAiGeneratorOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Aluno | null>(null);
+  const [viewingPlano, setViewingPlano] = useState<PlanoTreino | null>(null);
   const [formData, setFormData] = useState({
     nome: '',
     descricao: '',
@@ -204,6 +206,10 @@ const Treinos = () => {
     setModalOpen(true);
   };
 
+  const handleViewExercises = (plano: PlanoTreino) => {
+    setViewingPlano(plano);
+  };
+
   const getNivelColor = (nivel: string) => {
     switch (nivel) {
       case 'iniciante': return 'bg-green-100 text-green-800';
@@ -217,6 +223,25 @@ const Treinos = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Se estiver visualizando exercícios, mostrar essa view
+  if (viewingPlano) {
+    return (
+      <div className="min-h-screen bg-background">
+        <header className="border-b border-border bg-card">
+          <div className="container mx-auto px-4 py-4">
+            <Button variant="ghost" size="sm" onClick={() => setViewingPlano(null)}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Voltar para Planos
+            </Button>
+          </div>
+        </header>
+        <main className="container mx-auto px-4 py-8">
+          <WorkoutExercises planoId={viewingPlano.id} planoNome={viewingPlano.nome} />
+        </main>
       </div>
     );
   }
@@ -407,6 +432,14 @@ const Treinos = () => {
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                   <CardTitle className="text-lg">{plano.nome}</CardTitle>
                   <div className="flex space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleViewExercises(plano)}
+                      title="Ver Exercícios"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"
