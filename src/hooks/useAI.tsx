@@ -1,11 +1,6 @@
 import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
-
-interface AIRequest {
-  context: string;
-  question: string;
-  userData?: any;
-}
+import { supabase } from '@/integrations/supabase/client';
 
 interface AIResponse {
   response: string;
@@ -31,31 +26,67 @@ interface AIResponse {
 export const useAI = () => {
   const [loading, setLoading] = useState(false);
 
-  const callAI = async (request: AIRequest): Promise<AIResponse | null> => {
+  const generateWorkoutPlan = async (studentData: any, preferences: any): Promise<AIResponse | null> => {
     setLoading(true);
     
     try {
-      const response = await fetch('https://n8n.leplustudio.top/webhook-test/evolvefit-llm', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          context: request.context,
-          question: request.question,
-          userData: request.userData,
-          timestamp: new Date().toISOString(),
-        }),
+      const { data, error } = await supabase.functions.invoke('generate-workout', {
+        body: { 
+          student: studentData, 
+          preferences: preferences 
+        }
       });
 
-      if (!response.ok) {
-        throw new Error(`Erro na API: ${response.status}`);
-      }
-
-      const data = await response.json();
+      if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Erro ao chamar IA:', error);
+      console.error('Erro ao gerar treino:', error);
+      toast({
+        title: "Erro na IA",
+        description: "Não foi possível gerar o treino. Tente novamente.",
+        variant: "destructive"
+      });
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const analyzeProgress = async (progressData: any): Promise<AIResponse | null> => {
+    setLoading(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-progress', {
+        body: { progress: progressData }
+      });
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Erro ao analisar progresso:', error);
+      toast({
+        title: "Erro na IA",
+        description: "Não foi possível analisar o progresso. Tente novamente.",
+        variant: "destructive"
+      });
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getGeneralAdvice = async (question: string, context?: any): Promise<AIResponse | null> => {
+    setLoading(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('general-advice', {
+        body: { question, context }
+      });
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Erro ao consultar IA:', error);
       toast({
         title: "Erro na IA",
         description: "Não foi possível consultar a inteligência artificial. Tente novamente.",
@@ -67,43 +98,8 @@ export const useAI = () => {
     }
   };
 
-  const generateWorkoutPlan = async (studentData: any, preferences: any) => {
-    return callAI({
-      context: "workout_generation",
-      question: "Gere um plano de treino personalizado baseado nos dados do aluno",
-      userData: {
-        student: studentData,
-        preferences: preferences,
-        action: "generate_workout"
-      }
-    });
-  };
-
-  const analyzeProgress = async (progressData: any) => {
-    return callAI({
-      context: "progress_analysis",
-      question: "Analise o progresso do aluno e forneça sugestões de melhoria",
-      userData: {
-        progress: progressData,
-        action: "analyze_progress"
-      }
-    });
-  };
-
-  const getGeneralAdvice = async (question: string, context?: any) => {
-    return callAI({
-      context: "general_consultation",
-      question: question,
-      userData: {
-        context: context,
-        action: "general_advice"
-      }
-    });
-  };
-
   return {
     loading,
-    callAI,
     generateWorkoutPlan,
     analyzeProgress,
     getGeneralAdvice
