@@ -83,12 +83,31 @@ IMPORTANTE:
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Erro OpenAI:', response.status, errorText);
-      throw new Error(`Erro na API OpenAI: ${response.status}`);
+      throw new Error(`Erro na API OpenAI: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log('Resposta OpenAI:', JSON.stringify(data));
+
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error('Resposta inválida da OpenAI:', data);
+      throw new Error('Resposta inválida da API OpenAI');
+    }
+
     const content = data.choices[0].message.content;
-    const result = JSON.parse(content);
+    if (!content) {
+      console.error('Conteúdo vazio da OpenAI');
+      throw new Error('API OpenAI retornou conteúdo vazio');
+    }
+
+    let result;
+    try {
+      result = JSON.parse(content);
+    } catch (parseError) {
+      console.error('Erro ao parsear JSON:', parseError);
+      console.error('Conteúdo recebido:', content);
+      throw new Error('Erro ao processar resposta da IA');
+    }
 
     console.log('Treino gerado com sucesso');
 
