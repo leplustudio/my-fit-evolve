@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 interface Aluno {
   id: string;
@@ -23,6 +24,7 @@ export const useAlunoAuth = () => {
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
+        toast.error('Você precisa fazer login primeiro');
         navigate('/auth');
         return;
       }
@@ -34,7 +36,11 @@ export const useAlunoAuth = () => {
         .single();
 
       if (error || !alunoData) {
-        navigate('/');
+        toast.error('Acesso negado', {
+          description: 'Você precisa ser cadastrado como aluno pelo seu personal trainer. Entre em contato com seu personal para criar seu cadastro.'
+        });
+        await supabase.auth.signOut();
+        navigate('/auth');
         return;
       }
 

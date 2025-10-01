@@ -5,8 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/hooks/useAuth';
 import { z } from 'zod';
+import { Info } from 'lucide-react';
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Email inválido" }),
@@ -107,6 +109,13 @@ const Auth = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <Alert className="mb-4 bg-muted/50 border-primary/20">
+              <Info className="h-4 w-4 text-primary" />
+              <AlertDescription className="text-sm">
+                <strong>Alunos:</strong> Você deve ser cadastrado pelo seu personal trainer antes de criar sua conta. 
+                Use o mesmo email fornecido ao seu personal para ter acesso à área do aluno.
+              </AlertDescription>
+            </Alert>
             <Tabs defaultValue="login" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="login">Entrar</TabsTrigger>
