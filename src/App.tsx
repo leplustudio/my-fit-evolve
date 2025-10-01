@@ -11,6 +11,9 @@ import NotFound from "./pages/NotFound";
 import Alunos from "./pages/Alunos";
 import Treinos from "./pages/Treinos";
 import Progresso from "./pages/Progresso";
+import AlunoDashboard from "./pages/AlunoDashboard";
+import AlunoTreinos from "./pages/AlunoTreinos";
+import AlunoTreinoDetalhes from "./pages/AlunoTreinoDetalhes";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -35,6 +38,9 @@ const App = () => {
               <Route path="/alunos" element={<Alunos />} />
               <Route path="/treinos" element={<Treinos />} />
               <Route path="/progresso" element={<Progresso />} />
+              <Route path="/aluno/dashboard" element={<AlunoDashboard />} />
+              <Route path="/aluno/treinos" element={<AlunoTreinos />} />
+              <Route path="/aluno/treino/:id" element={<AlunoTreinoDetalhes />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </TooltipProvider>

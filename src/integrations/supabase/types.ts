@@ -215,6 +215,51 @@ export type Database = {
           },
         ]
       }
+      treino_execucoes: {
+        Row: {
+          aluno_id: string
+          created_at: string
+          data_execucao: string
+          id: string
+          observacoes: string | null
+          series_realizadas: Json
+          treino_exercicio_id: string
+        }
+        Insert: {
+          aluno_id: string
+          created_at?: string
+          data_execucao?: string
+          id?: string
+          observacoes?: string | null
+          series_realizadas: Json
+          treino_exercicio_id: string
+        }
+        Update: {
+          aluno_id?: string
+          created_at?: string
+          data_execucao?: string
+          id?: string
+          observacoes?: string | null
+          series_realizadas?: Json
+          treino_exercicio_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "treino_execucoes_aluno_id_fkey"
+            columns: ["aluno_id"]
+            isOneToOne: false
+            referencedRelation: "alunos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "treino_execucoes_treino_exercicio_id_fkey"
+            columns: ["treino_exercicio_id"]
+            isOneToOne: false
+            referencedRelation: "treino_exercicios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       treino_exercicios: {
         Row: {
           carga: string | null
