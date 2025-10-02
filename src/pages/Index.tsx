@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { Header } from '@/components/Header';
 
 const Index = () => {
   const { user, loading, signOut } = useAuth();
@@ -31,25 +32,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <h1 className="text-2xl font-bold">
-              <span className="text-foreground">Evolve</span>
-              <span className="text-primary font-bold">Fit</span>
-            </h1>
-          </div>
-          <div className="flex items-center space-x-4">
-            <span className="text-muted-foreground">
-              Olá, {user.user_metadata?.nome || user.email}
-            </span>
-            <Button variant="outline" onClick={signOut}>
-              Sair
-            </Button>
-          </div>
-        </div>
-      </header>
+      <Header 
+        userName={user.user_metadata?.nome || user.email || ''} 
+        profileLink="/perfil" 
+      />
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">

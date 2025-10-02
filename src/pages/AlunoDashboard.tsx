@@ -7,6 +7,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { Activity, Calendar, Dumbbell, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { Header } from '@/components/Header';
 
 export default function AlunoDashboard() {
   const { aluno, loading } = useAlunoAuth();
@@ -82,17 +83,20 @@ export default function AlunoDashboard() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">Olá, {aluno?.nome}!</p>
+    <div className="min-h-screen bg-background">
+      <Header userName={aluno?.nome || ''} profileLink="/aluno/perfil" />
+      
+      <div className="container mx-auto p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Dashboard</h1>
+            <p className="text-muted-foreground">Olá, {aluno?.nome}!</p>
+          </div>
+          <Button onClick={() => navigate('/aluno/treinos')}>
+            <Dumbbell className="h-4 w-4 mr-2" />
+            Meus Treinos
+          </Button>
         </div>
-        <Button onClick={() => navigate('/aluno/treinos')}>
-          <Dumbbell className="h-4 w-4 mr-2" />
-          Meus Treinos
-        </Button>
-      </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
@@ -191,6 +195,7 @@ export default function AlunoDashboard() {
           </CardContent>
         </Card>
       )}
+      </div>
     </div>
   );
 }

@@ -8,6 +8,10 @@ interface Aluno {
   nome: string;
   email: string;
   objetivo?: string;
+  telefone?: string;
+  data_nascimento?: string;
+  peso?: number;
+  altura?: number;
 }
 
 export const useAlunoAuth = () => {

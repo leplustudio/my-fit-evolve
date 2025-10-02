@@ -14,6 +14,8 @@ import Progresso from "./pages/Progresso";
 import AlunoDashboard from "./pages/AlunoDashboard";
 import AlunoTreinos from "./pages/AlunoTreinos";
 import AlunoTreinoDetalhes from "./pages/AlunoTreinoDetalhes";
+import PerfilPersonal from "./pages/PerfilPersonal";
+import PerfilAluno from "./pages/PerfilAluno";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -35,10 +37,12 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/perfil" element={<PerfilPersonal />} />
               <Route path="/alunos" element={<Alunos />} />
               <Route path="/treinos" element={<Treinos />} />
               <Route path="/progresso" element={<Progresso />} />
               <Route path="/aluno/dashboard" element={<AlunoDashboard />} />
+              <Route path="/aluno/perfil" element={<PerfilAluno />} />
               <Route path="/aluno/treinos" element={<AlunoTreinos />} />
               <Route path="/aluno/treino/:id" element={<AlunoTreinoDetalhes />} />
               <Route path="*" element={<NotFound />} />
